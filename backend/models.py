@@ -58,21 +58,21 @@ class Member(db.Model):
 
     def __init__(self, name, location, gender, match_location, match_gender, skills_held, skills_wanted):
 
-# >>> skillheld = Skill.query.filter(Skill.name=='English').one_or_none()
-# >>> skillwanted = Skill.query.filter(Skill.name=='Spanish').one_or_none()
-# >>> member=Member(name='John Smith', location='Barcelona', gender='Male', match_location=True, match_gender=False, skills_held=[skillheld], skills_wanted=[skillwanted])
-# >>> db.session.add(member)
-# >>> db.session.commit()
-
-
         self.name = name
         self.location = location
         self.gender = gender
         self.match_location = match_location
         self.match_gender = match_gender
 
-        self.skills_held = skills_held
-        self.skills_wanted = skills_wanted
+# TODO - Updated following logic to account for multiple skills (json? or list?)
+
+        skillsh = []
+        skillsh.append(Skill.query.filter(Skill.name==skills_held).one_or_none())
+        self.skills_held = skillsh
+
+        skillsw = []
+        skillsw.append(Skill.query.filter(Skill.name==skills_wanted).one_or_none())
+        self.skills_wanted = skillsw
 
     def insert(self):
         db.session.add(self)
