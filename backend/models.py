@@ -1,7 +1,10 @@
 import os
 from sqlalchemy import Column, String, Integer, create_engine, UniqueConstraint
 from flask_sqlalchemy import SQLAlchemy
+from flask import jsonify
 import json
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 database_name = "skillx"
 database_path = "postgres://{}:{}@{}/{}".format('udacity', 'udacity', 'localhost:5432', database_name)
@@ -49,6 +52,7 @@ class Member(db.Model):
     gender = db.Column(db.String(10), nullable=False) # M/F/Neither/Unspecified
     match_location = db.Column(db.Boolean, nullable=False)
     match_gender = db.Column(db.Boolean, nullable=False)
+    user_id = db.Column(db.String, nullable=False)
     skills_held = db.relationship('Skill', secondary=mem_skills_held,
         backref=db.backref('members_held', lazy=True))
     skills_wanted = db.relationship('Skill', secondary=mem_skills_wanted,
@@ -56,22 +60,25 @@ class Member(db.Model):
 
     __table_args__ = (UniqueConstraint('name', 'location', 'gender', name='_m_name_loc_gen_uc'),)
 
-    def __init__(self, name, location, gender, match_location, match_gender, skills_held, skills_wanted):
+    def __init__(self, name, location, gender, match_location, match_gender, user_id, skills_held, skills_wanted):
 
         self.name = name
         self.location = location
         self.gender = gender
         self.match_location = match_location
         self.match_gender = match_gender
+        self.user_id = user_id
 
-# TODO - Updated following logic to account for multiple skills (json? or list?)
-
+        # construct a list to hold all the skills held - as objects
         skillsh = []
-        skillsh.append(Skill.query.filter(Skill.name==skills_held).one_or_none())
+        for skill in skills_held:
+            skillsh.append(Skill.query.filter(Skill.name==skills_held).one_or_none())
         self.skills_held = skillsh
 
+        # construct a list to hold all the skills wanted - as objects
         skillsw = []
-        skillsw.append(Skill.query.filter(Skill.name==skills_wanted).one_or_none())
+        for skill in skills_wanted:
+            skillsw.append(Skill.query.filter(Skill.name==skills_wanted).one_or_none())
         self.skills_wanted = skillsw
 
     def insert(self):
@@ -86,6 +93,25 @@ class Member(db.Model):
         db.session.commit()
 
     def format(self):
+        skills_held = []
+        member_match_a = []
+        for skill in self.skills_held:
+            skills_held.append(skill.name)
+
+            for mem in Member.query.all():
+                logging.debug('mem.skills_wanted')
+                logging.debug(mem.skills_wanted)
+                # logging.debug('skill.id')
+                # logging.debug(skill.id)
+                # member_match_a.append(mem.query.filter(Skill.id.in_(mem.skills_wanted)))
+                # logging.debug(member_match_a)
+
+
+
+        skills_wanted = []
+        for skill in self.skills_wanted:
+            skills_wanted.append(skill.name)
+
         return {
           'id': self.id,
           'name': self.name,
@@ -93,8 +119,9 @@ class Member(db.Model):
           'gender': self.gender,
           'match_location': self.match_location,
           'match_gender': self.match_gender,
-          'skills_held': self.skills_held,
-          'skills_wanted': self.skills_wanted
+          'user_id': self.user_id,
+          'skills_held': skills_held,
+          'skills_wanted': skills_wanted
         }
 
 '''

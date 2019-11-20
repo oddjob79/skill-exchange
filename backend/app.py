@@ -4,15 +4,25 @@ from sqlalchemy import exc
 import json
 import logging
 from flask_cors import CORS
-
 from models import setup_db, Member, Skill
-# from auth import AuthError, requires_auth, get_token_auth_header
+from auth import AuthError, requires_auth, get_token_auth_header
+
+logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 setup_db(app)
 CORS(app)
 
-logging.basicConfig(level=logging.DEBUG)
+
+def retrieve_user(token):
+    # retrieve user_id from the token
+    token_sub = token['sub'].split('|')
+    user_id = token_sub[1]
+    if user_id is None:
+        # TODO Change the HTTP error to match more closely the issue
+        abort(404)
+
+    return user_id
 
 # '''
 # @TODO uncomment the following line to initialize the datbase
@@ -23,33 +33,75 @@ logging.basicConfig(level=logging.DEBUG)
 #
 # ## ROUTES
 #
-#
-# # '''
-# # @TODO implement endpoint
-# #     GET /drinks
-# #         it should be a public endpoint
-# #         it should contain only the drink.short() data representation
-# #     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
-# #         or appropriate status code indicating reason for failure
-# # '''
-# @app.route('/drinks')
-# def retrieve_drinks():
-#     drinks = Drink.query.all()
-#     if drinks is None:
-#         abort(404)
-#
-#     short_drinks = [dr.short() for dr in drinks]
-#
-#     if short_drinks is None:
-#         print('unable to get short_drinks')
-#         abort(404)
-#     else:
-#         return jsonify({
-#             'success': True,
-#             'drinks': short_drinks
-#         })
-#
-#
+@app.route('/profile')
+@requires_auth('read:profile')
+def retrieve_profile(token):
+    user_id = retrieve_user(token)
+    # user_id = '5dd3f12f09cdf00efd979aac'  # bjorn
+
+    # use user_id to get relevant user profile information
+    member = Member.query.filter(Member.user_id==user_id).one_or_none()
+    if member is None:
+        abort(404)
+
+    profile = member.format()
+
+    if profile is None:
+        abort(404)
+
+    return jsonify({
+        'success': True,
+        'member': profile
+    })
+
+
+@app.route('/profile', methods=['POST'])
+@requires_auth('post:profile')
+def create_profile(token):
+    new_user_id = retrieve_user(token)
+    new_name = request.json.get('name', None)
+    new_location = request.json.get('location', None)
+    new_gender = request.json.get('gender', None)
+    new_match_gender = request.json.get('match_gender', None)
+    new_match_location = request.json.get('match_location', None)
+    new_skills_held = request.json.get('skills_held', None)
+    new_skills_wanted = request.json.get('skills_wanted', None)
+
+    new_profile = Member(
+        name=new_name,
+        location=new_location,
+        gender=new_gender,
+        match_gender=new_match_gender,
+        match_location=new_match_location,
+        user_id=new_user_id,
+        skills_held=new_skills_held,
+        skills_wanted=new_skills_wanted
+    )
+    try:
+        new_profile.insert()
+    except:
+        abort(422)
+
+    return 'test success'
+
+
+          # recipe=json.dumps(new_recipe))
+    #         try:
+    #             new_drink.insert()
+    #         except:
+    #             abort(422)
+    #
+
+
+    # if profile is None:
+    #     abort(404)
+    #
+    # return jsonify({
+    #     'success': True,
+    #     'member': profile
+    # })
+
+
 #
 # # '''
 # # @TODO implement endpoint
@@ -202,59 +254,59 @@ logging.basicConfig(level=logging.DEBUG)
 #     })
 
 
-# ## Error Handling
+## Error Handling
+'''
+Example error handling for unprocessable entity
+'''
+@app.errorhandler(422)
+def unprocessable(error):
+    return jsonify({
+        "success": False,
+        "error": 422,
+        "message": "unprocessable"
+        }), 422
+
 # '''
-# Example error handling for unprocessable entity
+# @TODO implement error handlers using the @app.errorhandler(error) decorator
+#     each error handler should return (with approprate messages):
+#              jsonify({
+#                     "success": False,
+#                     "error": 404,
+#                     "message": "resource not found"
+#                     }), 404
+#
 # '''
-# @app.errorhandler(422)
-# def unprocessable(error):
-#     return jsonify({
-#         "success": False,
-#         "error": 422,
-#         "message": "unprocessable"
-#         }), 422
-#
-# # '''
-# # @TODO implement error handlers using the @app.errorhandler(error) decorator
-# #     each error handler should return (with approprate messages):
-# #              jsonify({
-# #                     "success": False,
-# #                     "error": 404,
-# #                     "message": "resource not found"
-# #                     }), 404
-# #
-# # '''
-#
-# @app.errorhandler(400)
-# def bad_request(error):
-#     return jsonify({
-#         "success": False,
-#         "error": 400,
-#         "message": "Unable to process the request due to invalid data. Please reformat the request and resubmit."
-#     }), 400
-#
-# @app.errorhandler(404)
-# def not_found(error):
-#     return jsonify({
-#         "success": False,
-#         "error": 404,
-#         "message": "The requested resource could not be found."
-#     }), 404
-#
-#
-# # '''
-# # @TODO implement error handler for 404
-# #     error handler should conform to general task above
-# # '''
-#
-#
-# # '''
-# # @TODO implement error handler for AuthError
-# #     error handler should conform to general task above
-# # '''
-# # error handler found on Stack Overflow
-# @app.errorhandler(AuthError)
-# def handle_auth_error(ex):
-#     response = jsonify(ex.error)
-#     response.status_code = ex.status_code
-#     return response
+
+@app.errorhandler(400)
+def bad_request(error):
+    return jsonify({
+        "success": False,
+        "error": 400,
+        "message": "Unable to process the request due to invalid data. Please reformat the request and resubmit."
+    }), 400
+
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({
+        "success": False,
+        "error": 404,
+        "message": "The requested resource could not be found."
+    }), 404
+
+
+# '''
+# @TODO implement error handler for 404
+#     error handler should conform to general task above
+# '''
+
+
+# '''
+# @TODO implement error handler for AuthError
+#     error handler should conform to general task above
+# '''
+# error handler found on Stack Overflow
+@app.errorhandler(AuthError)
+def handle_auth_error(ex):
+    response = jsonify(ex.error)
+    response.status_code = ex.status_code
+    return response
