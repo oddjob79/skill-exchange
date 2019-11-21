@@ -82,8 +82,37 @@ def create_profile(token):
     except:
         abort(422)
 
-    return 'test success'
+    # locate id of newly created user profile
+    created_profile = Member.query.filter(Member.user_id==new_user_id).one_or_none()
 
+    if created_profile is None:
+        abort(404)
+    else:
+        return jsonify({
+            'success': True,
+            'drinks': created_profile.format()
+        })
+
+@app.route('/profile', methods=['DELETE'])
+@requires_auth('delete:profile')
+def delete_own_profile(token):
+    # retrieve user_id from token
+    user_id = retrieve_user(token)
+    # locate member profile
+    profile = Member.query.filter(Member.user_id == user_id).one_or_none()
+    # if no match found - abort 404
+    if profile is None:
+        abort(404)
+    else:
+        try:
+            profile.delete()
+        except:
+            abort(422)
+
+    return jsonify({
+        'success': True,
+        'delete': user_id
+    })
 
           # recipe=json.dumps(new_recipe))
     #         try:

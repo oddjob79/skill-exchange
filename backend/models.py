@@ -1,5 +1,9 @@
 import os
-from sqlalchemy import Column, String, Integer, create_engine, UniqueConstraint
+# from sqlalchemy import Column, String, Integer, create_engine, UniqueConstraint
+from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy import *
+from sqlalchemy.orm import *
+from sqlalchemy.ext.declarative import declarative_base
 from flask_sqlalchemy import SQLAlchemy
 from flask import jsonify
 import json
@@ -27,8 +31,8 @@ mem_skills_held - many-to-many table
 '''
 
 mem_skills_held = db.Table('mem_skills_held',
-    db.Column('member_id', db.Integer, db.ForeignKey('members.id'), primary_key=True),
-    db.Column('skill_id', db.Integer, db.ForeignKey('skills.id'), primary_key=True)
+    db.Column('member_id', db.Integer, db.ForeignKey('members.id', ondelete='cascade'), primary_key=True),
+    db.Column('skill_id', db.Integer, db.ForeignKey('skills.id', ondelete='cascade'), primary_key=True)
 )
 
 '''
@@ -36,12 +40,14 @@ mem_skills_wanted - many-to-many table
 '''
 
 mem_skills_wanted = db.Table('mem_skills_wanted',
-    db.Column('member_id', db.Integer, db.ForeignKey('members.id'), primary_key=True),
-    db.Column('skill_id', db.Integer, db.ForeignKey('skills.id'), primary_key=True)
+    db.Column('member_id', db.Integer, db.ForeignKey('members.id', ondelete='cascade'), primary_key=True),
+    db.Column('skill_id', db.Integer, db.ForeignKey('skills.id', ondelete='cascade'), primary_key=True)
 )
 
 '''
 Members
+TODO - Change Unique Constraint to user_id
+TODO - Remove match gender
 '''
 class Member(db.Model):
     __tablename__ = 'members'
@@ -69,19 +75,28 @@ class Member(db.Model):
         self.match_gender = match_gender
         self.user_id = user_id
 
-        # construct a list to hold all the skills held - as objects
+        # construct a list of objects to hold all the skills held
         skillsh = []
-        for skill in skills_held:
-            skillsh.append(Skill.query.filter(Skill.name==skills_held).one_or_none())
+        for sk in skills_held:
+            skillsh.append(Skill.query.filter(Skill.name==sk).one_or_none())
         self.skills_held = skillsh
 
-        # construct a list to hold all the skills wanted - as objects
+        # construct a list of objects to hold all the skills wanted
         skillsw = []
-        for skill in skills_wanted:
-            skillsw.append(Skill.query.filter(Skill.name==skills_wanted).one_or_none())
+        for sk in skills_wanted:
+            skillsw.append(Skill.query.filter(Skill.name==sk).one_or_none())
         self.skills_wanted = skillsw
 
+    # def build_skills_list(skills):
+    #     skills_list = []
+    #     for skl in skills:
+    #         skills_list.append(Skill.query.filter(Skill.name==skl).one_or_none())
+    #     return skills_list
+
     def insert(self):
+        # self.skills_held = build_skills_list(self.skills_held)
+        # self.skills_wanted = build_skills_list(self.skills_wanted)
+
         db.session.add(self)
         db.session.commit()
 
@@ -92,25 +107,108 @@ class Member(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+    def retrieve_members(self):
+        if self.match_location is True:
+            members = Member.query.filter(Member.id!=self.id, Member.location==self.location).all()
+        else:
+            # takes into account other members' choice of matching on location
+            members = Member.query.filter(Member.id!=self.id).filter(((Member.match_location.is_(False))&(Member.location==self.location))|(Member.match_location.is_(False))).all()
+        return members
+
+    def find_member_skills_held_matches(self, skill, mem_match=[]):
+        # for each member in db aside from member
+        # for mem in Member.query.filter(Member.id!=self.id).all():
+        members = self.retrieve_members()
+        for mem in members:
+            # locate list of skills wanted for each member in list
+            for memskill in mem.skills_wanted:
+                # if the skill held matches a wanted skill
+                if skill.id == memskill.id:
+                    # add member details to mem_match list
+                    mem_match.append({
+                        'skill_type': 'held',
+                        'member_id': mem.id,
+                        'skill_name': memskill.name
+                    })
+        # if there were any matches, return them
+        if mem_match:
+            return mem_match
+
+    def find_member_skills_wanted_matches(self, skill, memlist, mem_match=[]):
+        # for each member in members already matched by skills_held
+        for mem in memlist:
+            memobj = Member.query.filter(Member.id==mem.get('member_id')).one_or_none()
+            # locate list of skills wanted for each member in list
+            for memskill in memobj.skills_held:
+                # if the skill held matches a wanted skill
+                if skill.id == memskill.id:
+                    # add member details to mem_match list
+                    mem_match.append({
+                        'skill_type': 'wanted',
+                        'member_id': memobj.id,
+                        'skill_name': memskill.name
+                    })
+        # if there were any matches, return them
+        if mem_match:
+            return mem_match
+
     def format(self):
+        # define empty dictionary for members who have a wanted skill which matched a skill held by the current member
+        mem_held_match = []
+        # define empty list for skills held by member
         skills_held = []
-        member_match_a = []
+        # for each skill held by member
         for skill in self.skills_held:
+            # add name to skills_held list
             skills_held.append(skill.name)
+            # find other members who want that skill and add them to a list
+            skills_held_match_list = self.find_member_skills_held_matches(skill, mem_held_match)
+            # logging.debug('skills_held_match_list')
+            # logging.debug(skills_held_match_list)
 
-            for mem in Member.query.all():
-                logging.debug('mem.skills_wanted')
-                logging.debug(mem.skills_wanted)
-                # logging.debug('skill.id')
-                # logging.debug(skill.id)
-                # member_match_a.append(mem.query.filter(Skill.id.in_(mem.skills_wanted)))
-                # logging.debug(member_match_a)
-
-
-
+        # define empty dictionary for members who have a held skill which matched a skill wanted by the current member
+        mem_wanted_match = []
+        # define empty list for skills wanted by the member
         skills_wanted = []
+        # for each skill wanted by the member
         for skill in self.skills_wanted:
+            # add skill name to list
             skills_wanted.append(skill.name)
+            # find other members who want that skill and add them to a list
+            skills_wanted_match_list = self.find_member_skills_wanted_matches(skill, mem_held_match, mem_wanted_match)
+            # logging.debug(skills_wanted_match_list)
+
+        # create empty list for all matching member information
+        matching_members = []
+        # for each member which has both a matching skill held and wanted
+        for memwanted in skills_wanted_match_list:
+            # create empty lists for the held and wanted matching skills
+            held_skills_list=[]
+            wanted_skills_list = []
+            # set variable for the member id for each member in the wanted skills list
+            memwanted_id = memwanted.get('member_id')
+            # add skill to the list of wanted skills held by other members
+            wanted_skills_list.append(memwanted.get('skill_name'))
+            # loop through the list of skills held that other members want
+            for memheld in skills_held_match_list:
+                # if there is also a skill wanted that is held by that member (matching memwanted_id)
+                if memheld['member_id'] == memwanted_id:
+                    # add the skill to the list of skills held that are wanted by another member
+                    held_skills_list.append(memheld.get('skill_name'))
+            # instantiate class for member details for matching members
+            memdetails = Member.query.filter(Member.id==memwanted_id).one_or_none()
+            # append matching member details to list for display
+            matching_members.append({
+                'id':memdetails.id,
+                'name': memdetails.name,
+                'location': memdetails.location,
+                'gender': memdetails.gender,
+                'skills_held_wanted': held_skills_list,
+                'skills_wanted_held': wanted_skills_list
+            })
+            # logging.debug(matching_members)
+
+
 
         return {
           'id': self.id,
@@ -121,7 +219,8 @@ class Member(db.Model):
           'match_gender': self.match_gender,
           'user_id': self.user_id,
           'skills_held': skills_held,
-          'skills_wanted': skills_wanted
+          'skills_wanted': skills_wanted,
+          'matching_members': matching_members
         }
 
 '''
