@@ -57,22 +57,23 @@ class Member(db.Model):
     location = db.Column(db.String, nullable=False)
     gender = db.Column(db.String(10), nullable=False) # M/F/Neither/Unspecified
     match_location = db.Column(db.Boolean, nullable=False)
-    match_gender = db.Column(db.Boolean, nullable=False)
-    user_id = db.Column(db.String, nullable=False)
+    # match_gender = db.Column(db.Boolean, nullable=False)
+    user_id = db.Column(db.String, nullable=False, unique=True)
     skills_held = db.relationship('Skill', secondary=mem_skills_held,
         backref=db.backref('members_held', lazy=True))
     skills_wanted = db.relationship('Skill', secondary=mem_skills_wanted,
         backref=db.backref('members_wanted', lazy=True))
 
-    __table_args__ = (UniqueConstraint('name', 'location', 'gender', name='_m_name_loc_gen_uc'),)
+    # __table_args__ = (UniqueConstraint('name', 'location', 'gender', name='_m_name_loc_gen_uc'),)
 
-    def __init__(self, name, location, gender, match_location, match_gender, user_id, skills_held, skills_wanted):
+    # def __init__(self, name, location, gender, match_location, match_gender, user_id, skills_held, skills_wanted):
+    def __init__(self, name, location, gender, match_location, user_id, skills_held, skills_wanted):
 
         self.name = name
         self.location = location
         self.gender = gender
         self.match_location = match_location
-        self.match_gender = match_gender
+        # self.match_gender = match_gender
         self.user_id = user_id
 
         # construct a list of objects to hold all the skills held
@@ -216,7 +217,7 @@ class Member(db.Model):
           'location': self.location,
           'gender': self.gender,
           'match_location': self.match_location,
-          'match_gender': self.match_gender,
+          # 'match_gender': self.match_gender,
           'user_id': self.user_id,
           'skills_held': skills_held,
           'skills_wanted': skills_wanted,

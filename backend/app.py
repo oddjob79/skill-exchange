@@ -13,7 +13,7 @@ app = Flask(__name__)
 setup_db(app)
 CORS(app)
 
-
+# Method to retrieve the user_id from the token`
 def retrieve_user(token):
     # retrieve user_id from the token
     token_sub = token['sub'].split('|')
@@ -33,6 +33,8 @@ def retrieve_user(token):
 #
 # ## ROUTES
 #
+
+# GET PROFILE
 @app.route('/profile')
 @requires_auth('read:profile')
 def retrieve_profile(token):
@@ -54,7 +56,7 @@ def retrieve_profile(token):
         'member': profile
     })
 
-
+# POST PROFILE
 @app.route('/profile', methods=['POST'])
 @requires_auth('post:profile')
 def create_profile(token):
@@ -62,7 +64,7 @@ def create_profile(token):
     new_name = request.json.get('name', None)
     new_location = request.json.get('location', None)
     new_gender = request.json.get('gender', None)
-    new_match_gender = request.json.get('match_gender', None)
+    # new_match_gender = request.json.get('match_gender', None)
     new_match_location = request.json.get('match_location', None)
     new_skills_held = request.json.get('skills_held', None)
     new_skills_wanted = request.json.get('skills_wanted', None)
@@ -71,7 +73,7 @@ def create_profile(token):
         name=new_name,
         location=new_location,
         gender=new_gender,
-        match_gender=new_match_gender,
+        # match_gender=new_match_gender,
         match_location=new_match_location,
         user_id=new_user_id,
         skills_held=new_skills_held,
@@ -93,6 +95,8 @@ def create_profile(token):
             'drinks': created_profile.format()
         })
 
+
+# DELETE PROFILE
 @app.route('/profile', methods=['DELETE'])
 @requires_auth('delete:profile')
 def delete_own_profile(token):
@@ -114,21 +118,50 @@ def delete_own_profile(token):
         'delete': user_id
     })
 
-          # recipe=json.dumps(new_recipe))
-    #         try:
-    #             new_drink.insert()
-    #         except:
-    #             abort(422)
-    #
 
+# PATCH PROFILE
 
-    # if profile is None:
-    #     abort(404)
-    #
-    # return jsonify({
-    #     'success': True,
-    #     'member': profile
-    # })
+@app.route('/profile', methods=['PATCH'])
+@requires_auth('patch:profile')
+def edit_own_profile(token):
+    # retrieve user_id from token
+    user_id = retrieve_user(token)
+    return 'pippy longstockings'    
+#     # Retreieve updated data from form
+    # upd_title = request.json.get('title', None)
+    # upd_recipe = request.json.get('recipe', None)
+#
+#     # if no new details sent, then abort 400
+#     if (upd_title is None) and (upd_recipe is None):
+#         abort(400)
+#     # else attempt update
+#     else:
+#         # locate drink to be updated
+#         upd_drink = Drink.query.filter(Drink.id == id).one_or_none()
+#         # if no match found - abort 404
+#         if upd_drink is None:
+#             print ('ID not found')
+#             abort(404)
+#         else:
+#             if upd_title is not None:
+#                 upd_drink.title = upd_title
+#             if upd_recipe is not None:
+#                 # json.dumps used to convert recipe to string for entry into db
+#                 upd_drink.recipe = json.dumps(upd_recipe)
+#             try:
+#                 upd_drink.update()
+#             except:
+#                 abort(422)
+#
+#         # build array for return to requestor
+#         upd_drink_arr = []
+#         upd_drink_arr.extend((upd_drink.title, upd_drink.recipe))
+#
+#     return jsonify({
+#         'success': True,
+#         'drinks': upd_drink_arr
+#     })
+
 
 
 #
@@ -169,34 +202,6 @@ def delete_own_profile(token):
 # #         or appropriate status code indicating reason for failure
 # # '''
 #
-# @app.route('/drinks', methods=['POST'])
-# @requires_auth('post:drinks')
-# def add_new_drink(token):
-#     new_title = request.json.get('title', None)
-#     new_recipe = request.json.get('recipe', None)
-#
-#     # if missing info needed to create drink then abort 400
-#     if (new_title is None) or (new_recipe is None):
-#         abort(400)
-#     # else attempt insert data into db
-#     else:
-#         # json.dumps used to convert recipe to string for entry into db
-#         new_drink = Drink(title=new_title, recipe=json.dumps(new_recipe))
-#         try:
-#             new_drink.insert()
-#         except:
-#             abort(422)
-#
-#     # locate id of newly created drink (json.dumps used to read string from db)
-#     created_drink = Drink.query.filter(Drink.title==new_title, Drink.recipe==json.dumps(new_recipe)).one_or_none()
-#
-#     if created_drink is None:
-#         abort(404)
-#     else:
-#         return jsonify({
-#             'success': True,
-#             'drinks': created_drink.long()
-#         })
 #
 #
 #
@@ -262,25 +267,6 @@ def delete_own_profile(token):
 # #         or appropriate status code indicating reason for failure
 # # '''
 #
-# @app.route('/drinks/<int:id>', methods=['DELETE'])
-# @requires_auth('delete:drinks')
-# def delete_existing_drink(token, id):
-#     # locate drink to be deleted
-#     del_drink = Drink.query.filter(Drink.id == id).one_or_none()
-#     # if no match found - abort 404
-#     if del_drink is None:
-#         print ('ID not found')
-#         abort(404)
-#     else:
-#         try:
-#             del_drink.delete()
-#         except:
-#             abort(422)
-#
-#     return jsonify({
-#         'success': True,
-#         'delete': id
-#     })
 
 
 ## Error Handling
