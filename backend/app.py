@@ -64,7 +64,6 @@ def create_profile(token):
     new_name = request.json.get('name', None)
     new_location = request.json.get('location', None)
     new_gender = request.json.get('gender', None)
-    # new_match_gender = request.json.get('match_gender', None)
     new_match_location = request.json.get('match_location', None)
     new_skills_held = request.json.get('skills_held', None)
     new_skills_wanted = request.json.get('skills_wanted', None)
@@ -73,7 +72,6 @@ def create_profile(token):
         name=new_name,
         location=new_location,
         gender=new_gender,
-        # match_gender=new_match_gender,
         match_location=new_match_location,
         user_id=new_user_id,
         skills_held=new_skills_held,
@@ -124,43 +122,55 @@ def delete_own_profile(token):
 @app.route('/profile', methods=['PATCH'])
 @requires_auth('patch:profile')
 def edit_own_profile(token):
-    # retrieve user_id from token
-    user_id = retrieve_user(token)
-    return 'pippy longstockings'    
-#     # Retreieve updated data from form
-    # upd_title = request.json.get('title', None)
-    # upd_recipe = request.json.get('recipe', None)
-#
-#     # if no new details sent, then abort 400
-#     if (upd_title is None) and (upd_recipe is None):
-#         abort(400)
-#     # else attempt update
-#     else:
-#         # locate drink to be updated
-#         upd_drink = Drink.query.filter(Drink.id == id).one_or_none()
-#         # if no match found - abort 404
-#         if upd_drink is None:
-#             print ('ID not found')
-#             abort(404)
-#         else:
-#             if upd_title is not None:
-#                 upd_drink.title = upd_title
-#             if upd_recipe is not None:
-#                 # json.dumps used to convert recipe to string for entry into db
-#                 upd_drink.recipe = json.dumps(upd_recipe)
-#             try:
-#                 upd_drink.update()
-#             except:
-#                 abort(422)
-#
-#         # build array for return to requestor
-#         upd_drink_arr = []
-#         upd_drink_arr.extend((upd_drink.title, upd_drink.recipe))
-#
-#     return jsonify({
-#         'success': True,
-#         'drinks': upd_drink_arr
-#     })
+    upd_user_id = retrieve_user(token)
+    upd_name = request.json.get('name', None)
+    upd_location = request.json.get('location', None)
+    upd_gender = request.json.get('gender', None)
+    upd_match_location = request.json.get('match_location', None)
+    upd_skills_held = request.json.get('skills_held', None)
+    upd_skills_wanted = request.json.get('skills_wanted', None)
+
+    # if no new details sent, then abort 400
+    if (upd_name is None) and (upd_location is None) and (upd_gender is None) and (upd_match_location is None) and (upd_skills_held is None) and (upd_skills_wanted is None):
+        abort(400)
+    # else attempt update
+    else:
+        # locate profile to be updated
+        upd_profile = Member.query.filter(Member.user_id == upd_user_id).one_or_none()
+        # if no match found - abort 404 - not sure if will be used
+        if upd_profile is None:
+            print ('User ID not found')
+            abort(404)
+        else:
+            if upd_name is not None:
+                upd_profile.name = upd_name
+            if upd_location is not None:
+                upd_profile.location = upd_location
+            if upd_gender is not None:
+                upd_profile.gender = upd_gender
+            if upd_match_location is not None:
+                upd_profile.match_location = upd_match_location
+            if upd_skills_held is not None:
+                # clear out existing skills held
+                upd_profile.skills_held.clear()
+                # use method to build a list of skills objects to re-add
+                upd_profile.skills_held = Member.construct_skills_obj_list(upd_profile, upd_skills_held)
+            if upd_skills_wanted is not None:
+                # clear out existing skills held
+                upd_profile.skills_wanted.clear()
+                # use method to build a list of skills objects to re-add
+                upd_profile.skills_wanted = Member.construct_skills_obj_list(upd_profile, upd_skills_wanted)
+            try:
+                upd_profile.update()
+            except:
+                abort(422)
+
+    return jsonify({
+        'success': True,
+        'profile': upd_profile.format()
+    })
+
+
 
 
 

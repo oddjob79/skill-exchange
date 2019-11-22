@@ -60,26 +60,21 @@ class Member(db.Model):
     skills_wanted = db.relationship('Skill', secondary=mem_skills_wanted,
         backref=db.backref('members_wanted', lazy=True))
 
+    # construct a list of skill objects
+    def construct_skills_obj_list(self, skills):
+        skills_list = []
+        for sk in skills:
+            skills_list.append(Skill.query.filter(Skill.name==sk).one_or_none())
+        return skills_list
 
     def __init__(self, name, location, gender, match_location, user_id, skills_held, skills_wanted):
-
         self.name = name
         self.location = location
         self.gender = gender
         self.match_location = match_location
         self.user_id = user_id
-
-        # construct a list of objects to hold all the skills held
-        skillsh = []
-        for sk in skills_held:
-            skillsh.append(Skill.query.filter(Skill.name==sk).one_or_none())
-        self.skills_held = skillsh
-
-        # construct a list of objects to hold all the skills wanted
-        skillsw = []
-        for sk in skills_wanted:
-            skillsw.append(Skill.query.filter(Skill.name==sk).one_or_none())
-        self.skills_wanted = skillsw
+        self.skills_held = self.construct_skills_obj_list(skills_held)
+        self.skills_wanted = self.construct_skills_obj_list(skills_wanted)
 
     def insert(self):
         db.session.add(self)
