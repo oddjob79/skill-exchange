@@ -102,6 +102,24 @@ def retrieve_member_list(token):
     else:
         abort(401)
 
+# GET SKILL LIST
+@app.route('/skills')
+@requires_auth('read:skills')
+def retrieve_skill_list(token):
+    skills = Skill.query.order_by(Skill.id).all()
+    skill_list = []
+    for skill in skills:
+        skill_list.append(
+            skill.format()
+        )
+    if skills:
+        return jsonify({
+            'success': True,
+            'skills': skill_list
+        })
+    else:
+        abort(401)
+
 
 # POST PROFILE
 @app.route('/profile', methods=['POST'])
