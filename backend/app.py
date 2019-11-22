@@ -53,12 +53,6 @@ def delete_profile(user_id):
     })
 
 
-# '''
-# @TODO uncomment the following line to initialize the datbase
-# !! NOTE THIS WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
-# !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
-# '''
-# # db_drop_and_create_all()
 #
 # ## ROUTES
 #
@@ -94,13 +88,13 @@ def retrieve_member_list(token):
             'location': member.location,
             'gender': member.gender
         })
-    if members:
+    if mem_list:
         return jsonify({
             'success': True,
             'members': mem_list
         })
     else:
-        abort(401)
+        abort(422)
 
 # GET SKILL LIST
 @app.route('/skills')
@@ -112,13 +106,13 @@ def retrieve_skill_list(token):
         skill_list.append(
             skill.format()
         )
-    if skills:
+    if skill_list:
         return jsonify({
             'success': True,
             'skills': skill_list
         })
     else:
-        abort(401)
+        abort(422)
 
 # GET INDIVIDUAL SKILL INFO
 @app.route('/skill/<int:id>')
@@ -329,135 +323,7 @@ def edit_skill(token, id):
     })
 
 
-
-#
-# # '''
-# # @TODO implement endpoint
-# #     GET /drinks-detail
-# #         it should require the 'get:drinks-detail' permission
-# #         it should contain the drink.long() data representation
-# #     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
-# #         or appropriate status code indicating reason for failure
-# # '''
-# @app.route('/drinks-detail')
-# @requires_auth('get:drinks-detail')
-# def retrieve_drink_details(token):
-#     drinks = Drink.query.all()
-#     if drinks is None:
-#         abort(404)
-#
-#     long_drinks = [dr.long() for dr in drinks]
-#     if long_drinks is None:
-#         print('unable to get short_drinks')
-#         abort(404)
-#
-#     return jsonify({
-#         'success': True,
-#         'drinks': long_drinks
-#     })
-#
-#
-#
-# # '''
-# # @TODO implement endpoint
-# #     POST /drinks
-# #         it should create a new row in the drinks table
-# #         it should require the 'post:drinks' permission
-# #         it should contain the drink.long() data representation
-# #     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
-# #         or appropriate status code indicating reason for failure
-# # '''
-#
-#
-#
-#
-# # '''
-# # @TODO implement endpoint
-# #     PATCH /drinks/<id>
-# #         where <id> is the existing model id
-# #         it should respond with a 404 error if <id> is not found
-# #         it should update the corresponding row for <id>
-# #         it should require the 'patch:drinks' permission
-# #         it should contain the drink.long() data representation
-# #     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
-# #         or appropriate status code indicating reason for failure
-# # '''
-#
-# @app.route('/drinks/<int:id>', methods=['PATCH'])
-# @requires_auth('patch:drinks')
-# def edit_existing_drink(token, id):
-#     # Retreieve updated data from form
-#     upd_title = request.json.get('title', None)
-#     upd_recipe = request.json.get('recipe', None)
-#
-#     # if no new details sent, then abort 400
-#     if (upd_title is None) and (upd_recipe is None):
-#         abort(400)
-#     # else attempt update
-#     else:
-#         # locate drink to be updated
-#         upd_drink = Drink.query.filter(Drink.id == id).one_or_none()
-#         # if no match found - abort 404
-#         if upd_drink is None:
-#             print ('ID not found')
-#             abort(404)
-#         else:
-#             if upd_title is not None:
-#                 upd_drink.title = upd_title
-#             if upd_recipe is not None:
-#                 # json.dumps used to convert recipe to string for entry into db
-#                 upd_drink.recipe = json.dumps(upd_recipe)
-#             try:
-#                 upd_drink.update()
-#             except:
-#                 abort(422)
-#
-#         # build array for return to requestor
-#         upd_drink_arr = []
-#         upd_drink_arr.extend((upd_drink.title, upd_drink.recipe))
-#
-#     return jsonify({
-#         'success': True,
-#         'drinks': upd_drink_arr
-#     })
-#
-#
-# # '''
-# # @TODO implement endpoint
-# #     DELETE /drinks/<id>
-# #         where <id> is the existing model id
-# #         it should respond with a 404 error if <id> is not found
-# #         it should delete the corresponding row for <id>
-# #         it should require the 'delete:drinks' permission
-# #     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
-# #         or appropriate status code indicating reason for failure
-# # '''
-#
-
-
 ## Error Handling
-'''
-Example error handling for unprocessable entity
-'''
-@app.errorhandler(422)
-def unprocessable(error):
-    return jsonify({
-        "success": False,
-        "error": 422,
-        "message": "unprocessable"
-        }), 422
-
-# '''
-# @TODO implement error handlers using the @app.errorhandler(error) decorator
-#     each error handler should return (with approprate messages):
-#              jsonify({
-#                     "success": False,
-#                     "error": 404,
-#                     "message": "resource not found"
-#                     }), 404
-#
-# '''
-
 @app.errorhandler(400)
 def bad_request(error):
     return jsonify({
@@ -474,17 +340,31 @@ def not_found(error):
         "message": "The requested resource could not be found."
     }), 404
 
+@app.errorhandler(405)
+def method_not_allowed(error):
+    return jsonify({
+        "success": False,
+        "error": 405,
+        "message": "Method not allowed - please use an appropriate method with your request, or add a resource."
+    }), 405
 
-# '''
-# @TODO implement error handler for 404
-#     error handler should conform to general task above
-# '''
+@app.errorhandler(422)
+def unprocessable_entity(error):
+    return jsonify({
+        "success": False,
+        "error": 422,
+        "message": "The request was valid, but there was an issue during processing. Data may be out of range. Please consult the documentation and resubmit."
+    }), 422
+
+@app.errorhandler(500)
+def internal_server_error(error):
+    return jsonify({
+        "success": False,
+        "error": 500,
+        "message": "Internal Server Error. We don't quite know what happened here. Please consult the documentation to ensure your request is correctly formatted."
+    }), 500
 
 
-# '''
-# @TODO implement error handler for AuthError
-#     error handler should conform to general task above
-# '''
 # error handler found on Stack Overflow
 @app.errorhandler(AuthError)
 def handle_auth_error(ex):
