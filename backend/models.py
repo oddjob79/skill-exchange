@@ -1,5 +1,4 @@
 import os
-# from sqlalchemy import Column, String, Integer, create_engine, UniqueConstraint
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy import *
 from sqlalchemy.orm import *
@@ -53,25 +52,21 @@ class Member(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     location = db.Column(db.String, nullable=False)
-    gender = db.Column(db.String(10), nullable=False) # M/F/Neither/Unspecified
+    gender = db.Column(db.String(10), nullable=False)
     match_location = db.Column(db.Boolean, nullable=False)
-    # match_gender = db.Column(db.Boolean, nullable=False)
     user_id = db.Column(db.String, nullable=False, unique=True)
     skills_held = db.relationship('Skill', secondary=mem_skills_held,
         backref=db.backref('members_held', lazy=True))
     skills_wanted = db.relationship('Skill', secondary=mem_skills_wanted,
         backref=db.backref('members_wanted', lazy=True))
 
-    # __table_args__ = (UniqueConstraint('name', 'location', 'gender', name='_m_name_loc_gen_uc'),)
 
-    # def __init__(self, name, location, gender, match_location, match_gender, user_id, skills_held, skills_wanted):
     def __init__(self, name, location, gender, match_location, user_id, skills_held, skills_wanted):
 
         self.name = name
         self.location = location
         self.gender = gender
         self.match_location = match_location
-        # self.match_gender = match_gender
         self.user_id = user_id
 
         # construct a list of objects to hold all the skills held
@@ -86,16 +81,7 @@ class Member(db.Model):
             skillsw.append(Skill.query.filter(Skill.name==sk).one_or_none())
         self.skills_wanted = skillsw
 
-    # def build_skills_list(skills):
-    #     skills_list = []
-    #     for skl in skills:
-    #         skills_list.append(Skill.query.filter(Skill.name==skl).one_or_none())
-    #     return skills_list
-
     def insert(self):
-        # self.skills_held = build_skills_list(self.skills_held)
-        # self.skills_wanted = build_skills_list(self.skills_wanted)
-
         db.session.add(self)
         db.session.commit()
 
@@ -106,6 +92,8 @@ class Member(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+
+# Set of methods utilzed for retrieving skills and matching skills / members
     def retrieve_members(self):
         if self.match_location is True:
             members = Member.query.filter(Member.id!=self.id, Member.location==self.location).all()
@@ -115,7 +103,6 @@ class Member(db.Model):
         return members
 
     def find_member_skills_held_matches(self, skill, mem_match=[]):
-        # for each member in db aside from member
         # for mem in Member.query.filter(Member.id!=self.id).all():
         members = self.retrieve_members()
         for mem in members:
@@ -151,10 +138,6 @@ class Member(db.Model):
         if mem_match:
             return mem_match
 
-    # get skills held
-
-    # get skills_wanted
-    # get matching_members
     def retrieve_matching_members(self, skills_held_match_list, skills_wanted_match_list):
         # create empty list for all matching member information
         matching_members = []
@@ -189,6 +172,7 @@ class Member(db.Model):
             return matching_members
             # logging.debug(matching_members)
 
+    # END OF METHODS USED FOR RETRIEVING MATCHING MEMBERS / SKILLS
 
     '''
     TODO - maybe create a short version for returning on successful POST
