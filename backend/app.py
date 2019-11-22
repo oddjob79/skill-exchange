@@ -49,7 +49,7 @@ def delete_profile(user_id):
 
     return jsonify({
         'success': True,
-        'delete': user_id
+        'delete': profile.id
     })
 
 
@@ -196,8 +196,6 @@ def create_skill(token):
         abort(404)
 
 
-
-
 # DELETE PROFILE - from user
 @app.route('/profile', methods=['DELETE'])
 @requires_auth('delete:profile')
@@ -217,6 +215,26 @@ def delete_member_profile(token, id):
         return delete_profile(mem.user_id)
     else:
         abort(404)
+
+
+# DELETE SKILL
+@app.route('/skill/<int:id>', methods=['DELETE'])
+@requires_auth('delete:skills')
+def delete_skill(token, id):
+    skill = Skill.query.get(id)
+    # if no match found - abort 404
+    if skill is None:
+        abort(404)
+    else:
+        try:
+            skill.delete()
+        except:
+            abort(422)
+
+    return jsonify({
+        'success': True,
+        'delete': id
+    })
 
 
 # PATCH PROFILE
