@@ -238,7 +238,6 @@ def delete_skill(token, id):
 
 
 # PATCH PROFILE
-
 @app.route('/profile', methods=['PATCH'])
 @requires_auth('patch:profile')
 def edit_own_profile(token):
@@ -290,7 +289,44 @@ def edit_own_profile(token):
         'profile': upd_profile.format()
     })
 
+# PATCH SKILL
+@app.route('/skill/<int:id>', methods=['PATCH'])
+@requires_auth('patch:skills')
+def edit_skill(token, id):
+    upd_name = request.json.get('name', None)
+    upd_description = request.json.get('description', None)
+    upd_category = request.json.get('category', None)
+    upd_equipment_reqd = request.json.get('equipment_reqd', None)
 
+    # if no new details sent, then abort 400
+    if (upd_name is None) and (upd_description is None) and (upd_category is None) and (upd_equipment_reqd is None):
+        abort(400)
+    # else attempt update
+    else:
+        # locate profile to be updated
+        upd_skill = Skill.query.get(id)
+        # if no match found - abort 404 - not sure if will be used
+        if upd_skill is None:
+            print ('Skill ID not found')
+            abort(404)
+        else:
+            if upd_name is not None:
+                upd_skill.name = upd_name
+            if upd_description is not None:
+                upd_skill.description = upd_description
+            if upd_category is not None:
+                upd_skill.category = upd_category
+            if upd_equipment_reqd is not None:
+                upd_skill.equipment_reqd = upd_equipment_reqd
+            try:
+                upd_skill.update()
+            except:
+                abort(422)
+
+    return jsonify({
+        'success': True,
+        'skill': upd_skill.format()
+    })
 
 
 
