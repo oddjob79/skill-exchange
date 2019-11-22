@@ -120,6 +120,19 @@ def retrieve_skill_list(token):
     else:
         abort(401)
 
+# GET INDIVIDUAL SKILL INFO
+@app.route('/skill/<int:id>')
+@requires_auth('read:skills')
+def retrieve_skill(token, id):
+    skill = Skill.query.get(id)
+    if skill:
+        return jsonify({
+            'success': True,
+            'skill': skill.format()
+        })
+    else:
+        abort(404)
+
 
 # POST PROFILE
 @app.route('/profile', methods=['POST'])
