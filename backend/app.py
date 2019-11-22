@@ -24,6 +24,35 @@ def retrieve_user(token):
 
     return user_id
 
+def retrieve_profile(user_id):
+    # use user_id to get relevant user profile information
+    member = Member.query.filter(Member.user_id==user_id).one_or_none()
+    if member is None:
+        abort(404)
+
+    return jsonify({
+        'success': True,
+        'member': member.format()
+    })
+
+
+def delete_profile(user_id):
+    profile = Member.query.filter(Member.user_id == user_id).one_or_none()
+    # if no match found - abort 404
+    if profile is None:
+        abort(404)
+    else:
+        try:
+            profile.delete()
+        except:
+            abort(422)
+
+    return jsonify({
+        'success': True,
+        'delete': user_id
+    })
+
+
 # '''
 # @TODO uncomment the following line to initialize the datbase
 # !! NOTE THIS WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
@@ -34,27 +63,23 @@ def retrieve_user(token):
 # ## ROUTES
 #
 
-# GET PROFILE
+# GET OWN PROFILE
 @app.route('/profile')
 @requires_auth('read:profile')
-def retrieve_profile(token):
+def retrieve_own_profile(token):
     user_id = retrieve_user(token)
     # user_id = '5dd3f12f09cdf00efd979aac'  # bjorn
+    return retrieve_profile(user_id)
 
-    # use user_id to get relevant user profile information
-    member = Member.query.filter(Member.user_id==user_id).one_or_none()
-    if member is None:
+# GET MEMBER PROFILE
+@app.route('/member/<int:id>')
+@requires_auth('read:member')
+def retrieve_member_profile(token, id):
+    mem = Member.query.get(id)
+    if mem:
+        return retrieve_profile(mem.user_id)
+    else:
         abort(404)
-
-    profile = member.format()
-
-    if profile is None:
-        abort(404)
-
-    return jsonify({
-        'success': True,
-        'member': profile
-    })
 
 # POST PROFILE
 @app.route('/profile', methods=['POST'])
@@ -82,39 +107,31 @@ def create_profile(token):
     except:
         abort(422)
 
-    # locate id of newly created user profile
-    created_profile = Member.query.filter(Member.user_id==new_user_id).one_or_none()
-
-    if created_profile is None:
-        abort(404)
+    if new_user_id:
+        return retrieve_profile(new_user_id)
     else:
-        return jsonify({
-            'success': True,
-            'drinks': created_profile.format()
-        })
+        abort(404)
 
 
-# DELETE PROFILE
+# DELETE PROFILE - from user
 @app.route('/profile', methods=['DELETE'])
 @requires_auth('delete:profile')
 def delete_own_profile(token):
     # retrieve user_id from token
     user_id = retrieve_user(token)
-    # locate member profile
-    profile = Member.query.filter(Member.user_id == user_id).one_or_none()
-    # if no match found - abort 404
-    if profile is None:
-        abort(404)
-    else:
-        try:
-            profile.delete()
-        except:
-            abort(422)
+    # use method to delete profile
+    return delete_profile(user_id)
 
-    return jsonify({
-        'success': True,
-        'delete': user_id
-    })
+
+# DELETE MEMBER PROFILE - from admin
+@app.route('/member/<int:id>', methods=['DELETE'])
+@requires_auth('delete:member')
+def delete_member_profile(token, id):
+    mem = Member.query.get(id)
+    if mem:
+        return delete_profile(mem.user_id)
+    else:
+        abort(404)
 
 
 # PATCH PROFILE

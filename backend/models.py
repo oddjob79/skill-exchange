@@ -192,7 +192,10 @@ class Member(db.Model):
             # find other members who want that skill and add them to a list
             skills_wanted_match_list = self.find_member_skills_wanted_matches(skill, mem_held_match, mem_wanted_match)
 
-        member_matches = self.retrieve_matching_members(skills_held_match_list, skills_wanted_match_list)
+        if skills_wanted_match_list is None:
+            member_matches = []
+        else:
+            member_matches = self.retrieve_matching_members(skills_held_match_list, skills_wanted_match_list)
 
         return {
           'id': self.id,
