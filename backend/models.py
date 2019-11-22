@@ -46,8 +46,6 @@ mem_skills_wanted = db.Table('mem_skills_wanted',
 
 '''
 Members
-TODO - Change Unique Constraint to user_id
-TODO - Remove match gender
 '''
 class Member(db.Model):
     __tablename__ = 'members'
@@ -153,32 +151,11 @@ class Member(db.Model):
         if mem_match:
             return mem_match
 
-    def format(self):
-        # define empty dictionary for members who have a wanted skill which matched a skill held by the current member
-        mem_held_match = []
-        # define empty list for skills held by member
-        skills_held = []
-        # for each skill held by member
-        for skill in self.skills_held:
-            # add name to skills_held list
-            skills_held.append(skill.name)
-            # find other members who want that skill and add them to a list
-            skills_held_match_list = self.find_member_skills_held_matches(skill, mem_held_match)
-            # logging.debug('skills_held_match_list')
-            # logging.debug(skills_held_match_list)
+    # get skills held
 
-        # define empty dictionary for members who have a held skill which matched a skill wanted by the current member
-        mem_wanted_match = []
-        # define empty list for skills wanted by the member
-        skills_wanted = []
-        # for each skill wanted by the member
-        for skill in self.skills_wanted:
-            # add skill name to list
-            skills_wanted.append(skill.name)
-            # find other members who want that skill and add them to a list
-            skills_wanted_match_list = self.find_member_skills_wanted_matches(skill, mem_held_match, mem_wanted_match)
-            # logging.debug(skills_wanted_match_list)
-
+    # get skills_wanted
+    # get matching_members
+    def retrieve_matching_members(self, skills_held_match_list, skills_wanted_match_list):
         # create empty list for all matching member information
         matching_members = []
         # for each member which has both a matching skill held and wanted
@@ -207,9 +184,36 @@ class Member(db.Model):
                 'skills_held_wanted': held_skills_list,
                 'skills_wanted_held': wanted_skills_list
             })
+
+        if matching_members:
+            return matching_members
             # logging.debug(matching_members)
 
 
+    '''
+    TODO - maybe create a short version for returning on successful POST
+    '''
+    def format(self):
+        mem_held_match = []
+        skills_held = []
+        mem_wanted_match = []
+        skills_wanted = []
+
+        # for each skill held by member
+        for skill in self.skills_held:
+            # add name to skills_held list
+            skills_held.append(skill.name)
+            # find other members who want that skill and add them to a list
+            skills_held_match_list = self.find_member_skills_held_matches(skill, mem_held_match)
+
+        # for each skill wanted by the member
+        for skill in self.skills_wanted:
+            # add skill name to list
+            skills_wanted.append(skill.name)
+            # find other members who want that skill and add them to a list
+            skills_wanted_match_list = self.find_member_skills_wanted_matches(skill, mem_held_match, mem_wanted_match)
+
+        member_matches = self.retrieve_matching_members(skills_held_match_list, skills_wanted_match_list)
 
         return {
           'id': self.id,
@@ -218,10 +222,10 @@ class Member(db.Model):
           'gender': self.gender,
           'match_location': self.match_location,
           # 'match_gender': self.match_gender,
-          'user_id': self.user_id,
+          # 'user_id': self.user_id,
           'skills_held': skills_held,
           'skills_wanted': skills_wanted,
-          'matching_members': matching_members
+          'matching_members': member_matches
         }
 
 '''
