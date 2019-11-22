@@ -81,6 +81,28 @@ def retrieve_member_profile(token, id):
     else:
         abort(404)
 
+# GET MEMBER LIST
+@app.route('/members')
+@requires_auth('read:member')
+def retrieve_member_list(token):
+    members = Member.query.order_by(Member.id).all()
+    mem_list = []
+    for member in members:
+        mem_list.append({
+            'id': member.id,
+            'name': member.name,
+            'location': member.location,
+            'gender': member.gender
+        })
+    if members:
+        return jsonify({
+            'success': True,
+            'members': mem_list
+        })
+    else:
+        abort(401)
+
+
 # POST PROFILE
 @app.route('/profile', methods=['POST'])
 @requires_auth('post:profile')
