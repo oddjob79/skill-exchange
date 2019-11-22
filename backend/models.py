@@ -220,15 +220,15 @@ class Skill(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     description = db.Column(db.String)
-    mental_physical = db.Column(db.String(10))
+    category = db.Column(db.String(20))
     equipment_reqd = db.Column(db.String)
 
     __table_args__ = (UniqueConstraint('name', name='_sk_name_uc'),)
 
-    def __init__(self, name, description='', mental_physical='', equipment_reqd=''):
+    def __init__(self, name, description='', category='', equipment_reqd=''):
         self.name = name
         self.description = description
-        self.mental_physical = mental_physical
+        self.category = category
         self.equipment_reqd = equipment_reqd
 
     def insert(self):
@@ -247,6 +247,6 @@ class Skill(db.Model):
           'id': self.id,
           'name': self.name,
           'description': self.description,
-          'mental_physical': self.mental_physical,
+          'category': self.category,
           'equipment_reqd': self.equipment_reqd
         }

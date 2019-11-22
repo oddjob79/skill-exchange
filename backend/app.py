@@ -133,7 +133,6 @@ def retrieve_skill(token, id):
     else:
         abort(404)
 
-
 # POST PROFILE
 @app.route('/profile', methods=['POST'])
 @requires_auth('post:profile')
@@ -164,6 +163,39 @@ def create_profile(token):
         return retrieve_profile(new_user_id)
     else:
         abort(404)
+
+
+# POST SKILL
+@app.route('/skill', methods=['POST'])
+@requires_auth('post:skills')
+def create_skill(token):
+    new_name = request.json.get('name', None)
+    new_description = request.json.get('description', None)
+    new_category = request.json.get('category', None)
+    new_equipment_reqd = request.json.get('equipment_reqd', None)
+
+    new_skill = Skill(
+        name=new_name,
+        description=new_description,
+        category=new_category,
+        equipment_reqd=new_equipment_reqd
+    )
+    try:
+        new_skill.insert()
+    except:
+        abort(422)
+
+    skill_added = Skill.query.filter(Skill.name==new_name).one_or_none()
+
+    if skill_added:
+        return jsonify({
+            'success': True,
+            'skill': skill_added.format()
+        })
+    else:
+        abort(404)
+
+
 
 
 # DELETE PROFILE - from user
