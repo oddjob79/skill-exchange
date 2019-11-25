@@ -68,7 +68,7 @@ def create_app(test_config=None):
     # ## ROUTES
     #
 
-    # GET OWN PROFILE
+    # GET OWN PROFILE - T
     @app.route('/profile')
     @requires_auth('read:profile')
     def retrieve_own_profile(token):
@@ -76,7 +76,7 @@ def create_app(test_config=None):
         # user_id = '5dd3f12f09cdf00efd979aac'  # bjorn
         return retrieve_profile(user_id)
 
-    # GET MEMBER PROFILE
+    # GET MEMBER PROFILE - T
     @app.route('/member/<int:id>')
     @requires_auth('read:member')
     def retrieve_member_profile(token, id):
@@ -86,7 +86,7 @@ def create_app(test_config=None):
         else:
             abort(404)
 
-    # GET MEMBER LIST
+    # GET MEMBER LIST - T
     @app.route('/members')
     @requires_auth('read:member')
     def retrieve_member_list(token):
@@ -107,7 +107,7 @@ def create_app(test_config=None):
         else:
             abort(422)
 
-    # GET SKILL LIST
+    # GET SKILL LIST - T
     @app.route('/skills')
     @requires_auth('read:skills')
     def retrieve_skill_list(token):
@@ -125,7 +125,7 @@ def create_app(test_config=None):
         else:
             abort(422)
 
-    # GET INDIVIDUAL SKILL INFO
+    # GET INDIVIDUAL SKILL INFO - T
     @app.route('/skill/<int:id>')
     @requires_auth('read:skills')
     def retrieve_skill(token, id):
@@ -138,7 +138,7 @@ def create_app(test_config=None):
         else:
             abort(404)
 
-    # POST PROFILE
+    # POST PROFILE - T
     @app.route('/profile', methods=['POST'])
     @requires_auth('post:profile')
     def create_profile(token):
@@ -159,9 +159,6 @@ def create_app(test_config=None):
             skills_held=new_skills_held,
             skills_wanted=new_skills_wanted
         )
-        logging.debug(new_profile.match_location)
-        logging.debug(new_profile.skills_held)
-        logging.debug(new_profile.skills_wanted)
         try:
             new_profile.insert()
         except:
@@ -173,7 +170,7 @@ def create_app(test_config=None):
             abort(404)
 
 
-    # POST SKILL
+    # POST SKILL - T
     @app.route('/skill', methods=['POST'])
     @requires_auth('post:skills')
     def create_skill(token):
@@ -204,7 +201,7 @@ def create_app(test_config=None):
             abort(404)
 
 
-    # DELETE PROFILE - from user
+    # DELETE PROFILE - from user - T
     @app.route('/profile', methods=['DELETE'])
     @requires_auth('delete:profile')
     def delete_own_profile(token):
@@ -214,7 +211,7 @@ def create_app(test_config=None):
         return delete_profile(user_id)
 
 
-    # DELETE MEMBER PROFILE - from admin
+    # DELETE MEMBER PROFILE - from admin - T
     @app.route('/member/<int:id>', methods=['DELETE'])
     @requires_auth('delete:member')
     def delete_member_profile(token, id):
@@ -225,7 +222,7 @@ def create_app(test_config=None):
             abort(404)
 
 
-    # DELETE SKILL
+    # DELETE SKILL - T
     @app.route('/skill/<int:id>', methods=['DELETE'])
     @requires_auth('delete:skills')
     def delete_skill(token, id):
@@ -245,7 +242,7 @@ def create_app(test_config=None):
         })
 
 
-    # PATCH PROFILE
+    # PATCH PROFILE - T
     @app.route('/profile', methods=['PATCH'])
     @requires_auth('patch:profile')
     def edit_own_profile(token):
@@ -297,7 +294,7 @@ def create_app(test_config=None):
             'profile': upd_profile.format()
         })
 
-    # PATCH SKILL
+    # PATCH SKILL - T
     @app.route('/skill/<int:id>', methods=['PATCH'])
     @requires_auth('patch:skills')
     def edit_skill(token, id):

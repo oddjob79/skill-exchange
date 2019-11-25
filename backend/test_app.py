@@ -6,12 +6,10 @@ from flask_sqlalchemy import SQLAlchemy
 from app import create_app
 from models import setup_db, Member, Skill, db
 
-USERTOKEN = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ik1qSTRRakkyTlRSQ09UaENPVGsyTVRjNFFqTkZOME14T1RKQlJFWTFNRGRCUWtVeE1FRTVSUSJ9.eyJpc3MiOiJodHRwczovL3NraWxsLWV4Y2hhbmdlLmV1LmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw1ZGQzZjBjN2EwNzJkMjBmMTJhMTFlMmEiLCJhdWQiOiJza2lsbHNleGNoYW5nZSIsImlhdCI6MTU3NDQzMjE1NywiZXhwIjoxNTc0NDM5MzU3LCJhenAiOiJSSkZ5MUpoRE9zOHpaaVlxQlBUa2xvQ0JYanA1RnlFYiIsInNjb3BlIjoiIiwicGVybWlzc2lvbnMiOlsiZGVsZXRlOnByb2ZpbGUiLCJwYXRjaDpwcm9maWxlIiwicG9zdDpwcm9maWxlIiwicmVhZDpwcm9maWxlIiwicmVhZDpza2lsbHMiXX0.0wjJOxDkWTbKba6zibHYAfuJbavxORKzqKaMYd30mkV1fnTVtuWZbQF-ZdpcxJjDwu7J7B3gE1scuUZPhjyCFZP8vPLHaBSSNm49S7Q-LeZsMzOEl44Zll85qgHfClbppOm03iOuR3yJViEIxhWIbeQ9jTaLUFSGqr--x0DjRJRz2msobZqHZeSsWUhcIdJs4k210l0yI-qRLaGf7AVN4oM8KApAd-FRRSI-yin-5YqB-7DMc643G5dbCRLkd-5PnIQgCxMCNn5q6ClfPWEPNLOGh1s1MhXUbuh4AYDrY08oaGQ3skr0mfWw1dywgo9e-x9X8sC2TTnyd0_RbSr7Ew'
-ADMINTOKEN = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ik1qSTRRakkyTlRSQ09UaENPVGsyTVRjNFFqTkZOME14T1RKQlJFWTFNRGRCUWtVeE1FRTVSUSJ9.eyJpc3MiOiJodHRwczovL3NraWxsLWV4Y2hhbmdlLmV1LmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw1ZGQzZjE3ZDNmOWMwZTBlZjkwNjAyNTEiLCJhdWQiOiJza2lsbHNleGNoYW5nZSIsImlhdCI6MTU3NDQzNTM4NywiZXhwIjoxNTc0NDQyNTg3LCJhenAiOiJSSkZ5MUpoRE9zOHpaaVlxQlBUa2xvQ0JYanA1RnlFYiIsInNjb3BlIjoiIiwicGVybWlzc2lvbnMiOlsiZGVsZXRlOm1lbWJlciIsImRlbGV0ZTpza2lsbHMiLCJwYXRjaDpza2lsbHMiLCJwb3N0OnNraWxscyIsInJlYWQ6bWVtYmVyIiwicmVhZDpza2lsbHMiXX0.CSHB0KEqDSs9io_J0V-UNYR5EJ6ZcAoShVybY3hmZKbVJbU4Wy9vGd9k7RXmul-FciXB_qWVs1Trss01IZ3exhhFA4WDzGYnEainBtgqP1_ujVaZfhXaMK9rDWgBCHJLdxTDoDM2PNbSj58SJpgwv_5UPoAPchyV4Uyu3aw5cNqua1h7bc93CfCT6mj-R59s0HNi3LSri2_sdt2K3FE70HXCaHq4FlY3ygu2MSlbgA6VwAvWJ1KYj2vBfWkhlYOF7Lfmx0wLJfhrj6RgsVy2uauXH2_ttorBWsFY7AN7fOc9GL7uA7UrfAEDZY2-yT-gSk_HPNBFsfUgqKsT9FOo5A'
+USERTOKEN = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ik1qSTRRakkyTlRSQ09UaENPVGsyTVRjNFFqTkZOME14T1RKQlJFWTFNRGRCUWtVeE1FRTVSUSJ9.eyJpc3MiOiJodHRwczovL3NraWxsLWV4Y2hhbmdlLmV1LmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw1ZGQzZjBjN2EwNzJkMjBmMTJhMTFlMmEiLCJhdWQiOiJza2lsbHNleGNoYW5nZSIsImlhdCI6MTU3NDU5NjkzNSwiZXhwIjoxNTc0NjA0MTM1LCJhenAiOiJSSkZ5MUpoRE9zOHpaaVlxQlBUa2xvQ0JYanA1RnlFYiIsInNjb3BlIjoiIiwicGVybWlzc2lvbnMiOlsiZGVsZXRlOnByb2ZpbGUiLCJwYXRjaDpwcm9maWxlIiwicG9zdDpwcm9maWxlIiwicmVhZDpwcm9maWxlIiwicmVhZDpza2lsbHMiXX0.0jdNUHxdioGJU6Tn3j3avMya6eOegjEcwL-vtcPrVGkl1kDf4hzqB7XBccCcb7Wqj1UR4r5Y2tmU4PniM1xMvDOnmemGFOoEBOTm-F2NHb1UXWSXx5GtMw_7TR0OpK3_cDpzaBHJrq-ZAMzXwNtVisrQO2bsbD4c9wzdIjY1sO1jCbJpaVeyN4xSiYgqgULZfs0vAnJXG-K4xv-5RoVt4A-ZOn_XYtOzYrw0JGuCsdh1gPDKEHFJdRMfh6xH3s2n88j5JEoqiFuPWPwCMYQbjYGjuGocoZYuxkGusZi79WIKZyH2edErTONQRV8x9X7SVModGqwqgHho-kTvGQ84FQ'
+ADMINTOKEN = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ik1qSTRRakkyTlRSQ09UaENPVGsyTVRjNFFqTkZOME14T1RKQlJFWTFNRGRCUWtVeE1FRTVSUSJ9.eyJpc3MiOiJodHRwczovL3NraWxsLWV4Y2hhbmdlLmV1LmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw1ZGQzZjE3ZDNmOWMwZTBlZjkwNjAyNTEiLCJhdWQiOiJza2lsbHNleGNoYW5nZSIsImlhdCI6MTU3NDU5NzYxNiwiZXhwIjoxNTc0NjA0ODE2LCJhenAiOiJSSkZ5MUpoRE9zOHpaaVlxQlBUa2xvQ0JYanA1RnlFYiIsInNjb3BlIjoiIiwicGVybWlzc2lvbnMiOlsiZGVsZXRlOm1lbWJlciIsImRlbGV0ZTpza2lsbHMiLCJwYXRjaDpza2lsbHMiLCJwb3N0OnNraWxscyIsInJlYWQ6bWVtYmVyIiwicmVhZDpza2lsbHMiXX0.BNf3l04razEqLVTx--D6yDQDLyF1BSPFWpolO2V8krfHMsZBoVMZNR1hRQmfI5k6eqRxYYMUEpLiS3QGWhpvjoMdauOkR3duSayKORv_L6azULKKray8gvsrtAIwDpatrBXncDAKTH12jvMKewYK_G_OfCXzNUbEUnY7lzGqDmJXeJYqG2T0SYJwHzeYf3AmoLHTaxYcBOhA5iL3EJ6HEamFF4GnCHyXXBSxu4aCA3P0FTboWYPpt7U8BidcRUuHynrC7AHTasR4_X6FYQ2CjPZuijmMZ_zM8LhVytGkECFsqVc254ukrEOPYq_mF5u3U9tzmcuuN13ZiwrXFbLj8w'
 
 class SkillXTestCase(unittest.TestCase):
-    """This class represents the trivia test case"""
-
     def setUp(self):
         """Define test variables and initialize app."""
         self.app = create_app()
@@ -35,23 +33,28 @@ class SkillXTestCase(unittest.TestCase):
             "name": "Anni",
             "location": "Sweden",
             "gender": "Female",
-            "match_location": "False",
-            "skills_held": ["English"],
-            "skills_wanted": ["Spanish"]
+            "match_location": False,
+            "skills_held": ["Piano"],
+            "skills_wanted": ["Swimming"]
         }
 
-        self.new_skill_eng = {
-        	"name": "English",
-        	"description": "English language to native speaker level",
-        	"category": "language",
-        	"equipment_reqd": "none"
+        self.edit_profile_anni = {
+            "name": "Anni-Frid",
+            "location": "London",
+            "skills_wanted": ["Swimming", "Chinese cooking"]
         }
 
         self.new_skill_esp = {
         	"name": "Spanish",
         	"description": "Spanish language to native speaker level",
         	"category": "language",
-        	"equipment_reqd": "none"
+        	"equipment_reqd": "pen and paper"
+        }
+
+        self.edit_skill_eng = {
+        	"description": "English language to native speaker level",
+        	"category": "language",
+        	"equipment_reqd": "pen and paper"
         }
 
         # binds the app to the current context
@@ -62,20 +65,48 @@ class SkillXTestCase(unittest.TestCase):
             self.db.create_all()
 
     def tearDown(self):
-        """Executed after reach test"""
+        """Executed after each test"""
         # db.drop_all()
         pass
 
-# POST SKILL
-    def test_create_skill_eng(self):
-        res = self.client().post('/skill', headers=self.adminheaders, json=self.new_skill_eng)
+## GET ALL MEMBERS (ADMIN)
+    def test_0010_retrieve_all_members(self):
+        res = self.client().get('/members', headers=self.adminheaders)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['members'])
+
+## GET INDIVIDUAL MEMBER (ADMIN)
+    def test_0020_retrieve_member_profile(self):
+        res = self.client().get('/member/1', headers=self.adminheaders)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['member'])
+
+## GET ALL SKILLS (ADMIN)
+    def test_0030_retrieve_all_skills(self):
+        res = self.client().get('/skills', headers=self.adminheaders)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['skills'])
+
+## GET INDIVIDUAL SKILL (ADMIN)
+    def test_0040_retrieve_skill(self):
+        res = self.client().get('/skill/1', headers=self.adminheaders)
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['skill'])
 
-    def test_create_skill_esp(self):
+## POST SKILL (ADMIN)
+    def test_0050_create_skill(self):
         res = self.client().post('/skill', headers=self.adminheaders, json=self.new_skill_esp)
         data = json.loads(res.data)
 
@@ -83,26 +114,70 @@ class SkillXTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
         self.assertTrue(data['skill'])
 
-# POST MEMBER PROFILE
-    def test_create_profile(self):
-        res = self.client().post('/profile', headers=self.userheaders, json=self.new_profile_anni)
+## PATCH SKILL (ADMIN)
+    def test_0060_edit_skill(self):
+        res = self.client().patch('/skill/1', headers=self.adminheaders, json=self.edit_skill_eng)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['skill'])
+
+## DELETE SKILL (ADMIN)
+    def test_0070_delete_skill(self):
+        res = self.client().delete('/skill/1', headers=self.adminheaders)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['delete'], 1)
+
+## DELETE PROFILE (ADMIN)
+    def test_0080_delete_member_profile(self):
+        res = self.client().delete('/member/1', headers=self.adminheaders)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['delete'], 1)
+
+## POST PROFILE (USER)
+    def test_0090_create_member_profile(self):
+        res = self.client().post('/profile', headers=self.adminheaders, json=self.new_profile_anni)
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['member'])
 
+## GET PROFILE (USER)
+    def test_0100_retrieve_own_profile(self):
+        res = self.client().get('/profile', headers=self.userheaders)
+        data = json.loads(res.data)
 
-    # # GET OWN PROFILE
-    # def test_retrieve_own_profile(self):
-    #     # test request path
-    #     res = self.client().get('/profile', headers=self.userheaders)
-    #     # load the data received from the response
-    #     data = json.loads(res.data)
-    #
-    #     self.assertEqual(res.status_code, 200) # Check the response is 200 response
-    #     self.assertEqual(data['success'], True) # Check json success = true
-    #     self.assertTrue(data['member']) # Check meber is populated
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['member'])
+
+## PATCH PROFILE (USER)
+    def test_0110_edit_own_profile(self):
+        res = self.client().patch('/profile', headers=self.userheaders, json=self.edit_profile_anni)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['profile'])
+
+## DELETE PROFILE (USER)
+    def test_0120_delete_member_profile(self):
+        res = self.client().delete('/profile', headers=self.userheaders)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['delete'])
+
+
 
 # # GET ALL QUESTIONS
 #     def test_retrieve_all_questions(self):
