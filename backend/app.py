@@ -9,6 +9,8 @@ from auth import AuthError, requires_auth, get_token_auth_header
 
 logging.basicConfig(level=logging.DEBUG)
 
+app = Flask(__name__)
+
 # Method to retrieve the user_id from the token`
 def retrieve_user(token):
     # retrieve user_id from the token
