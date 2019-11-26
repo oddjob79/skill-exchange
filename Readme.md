@@ -1,10 +1,23 @@
 Welcome to the Capstone Project for Udacity Full Stack Developer course
 
-Basic app to match users to one-another so they can meet and exchange skills
+These are the first steps taken in creating an app for adults looking to learn new skills by finding people they can exchange skills with.
+If you are someone who is looking to learn a new language for example, rather than paying for classes, you can offer to teach a skill of your own in exchange for learning the new language.
+By entering some simple information together with the skills you are willing to offer and the skills you are looking for, the system engine will locate other members with compatible profiles (matching skills), so that you are subsequently able to arrange to exchange your skills with that member.
 
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Things to know:
+Before running the test_app.py script, you will need to create a test postgres database and populate it with some test data.
+Assuming you have postgres running on your machine, you will need to do the following:
+dropdb skillx_test (only if you have previously run the test_app.py script)
+createdb skillx_test
+psql -U <postgres-user> -d skillx_test -a -f "skillx_test_db.sql"
+
+-----------------------------------
 API documentation
-
+-----------------------------------
 Endpoints
+-----------------------------------
 GET '/profile'
 GET '/member/{id}'
 GET '/members'
