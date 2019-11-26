@@ -15,7 +15,6 @@ def retrieve_user(token):
     token_sub = token['sub'].split('|')
     user_id = token_sub[1]
     if user_id is None:
-        # TODO Change the HTTP error to match more closely the issue
         abort(404)
 
     return user_id
@@ -143,31 +142,36 @@ def create_app(test_config=None):
     @requires_auth('post:profile')
     def create_profile(token):
         new_user_id = retrieve_user(token)
-        new_name = request.json.get('name', None)
-        new_location = request.json.get('location', None)
-        new_gender = request.json.get('gender', None)
-        new_match_location = request.json.get('match_location', None)
-        new_skills_held = request.json.get('skills_held', None)
-        new_skills_wanted = request.json.get('skills_wanted', None)
 
-        new_profile = Member(
-            name=new_name,
-            location=new_location,
-            gender=new_gender,
-            match_location=new_match_location,
-            user_id=new_user_id,
-            skills_held=new_skills_held,
-            skills_wanted=new_skills_wanted
-        )
-        try:
-            new_profile.insert()
-        except:
+        # Check if member already exists
+        if Member.query.filter(Member.user_id==new_user_id).one_or_none():
             abort(422)
-
-        if new_user_id:
-            return retrieve_profile(new_user_id)
         else:
-            abort(404)
+            new_name = request.json.get('name', None)
+            new_location = request.json.get('location', None)
+            new_gender = request.json.get('gender', None)
+            new_match_location = request.json.get('match_location', None)
+            new_skills_held = request.json.get('skills_held', None)
+            new_skills_wanted = request.json.get('skills_wanted', None)
+
+            new_profile = Member(
+                name=new_name,
+                location=new_location,
+                gender=new_gender,
+                match_location=new_match_location,
+                user_id=new_user_id,
+                skills_held=new_skills_held,
+                skills_wanted=new_skills_wanted
+            )
+            try:
+                new_profile.insert()
+            except:
+                abort(422)
+
+            if new_user_id:
+                return retrieve_profile(new_user_id)
+            else:
+                abort(404)
 
 
     # POST SKILL - T
