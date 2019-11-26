@@ -192,7 +192,11 @@ class Member(db.Model):
             # find other members who want that skill and add them to a list
             skills_wanted_match_list = self.find_member_skills_wanted_matches(skill, mem_held_match, mem_wanted_match)
 
-        if skills_wanted_match_list is None:
+        # in case of no skills being set for member (shouldn't occur) set skills_wanted_match_list to empty list
+        if (not self.skills_held) or (not self.skills_wanted):
+            skills_wanted_match_list = []
+        # if no skills matched with other members, return empty list for passing to requestor
+        if not skills_wanted_match_list:
             member_matches = []
         else:
             member_matches = self.retrieve_matching_members(skills_held_match_list, skills_wanted_match_list)
