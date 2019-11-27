@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify, abort
+from flask import Flask, request, jsonify, abort, render_template
 from sqlalchemy import exc
 import json
 import logging
@@ -9,7 +9,7 @@ from auth import AuthError, requires_auth, get_token_auth_header
 
 logging.basicConfig(level=logging.DEBUG)
 
-app = Flask(__name__)
+# app = Flask(__name__)
 
 # Method to retrieve the user_id from the token`
 def retrieve_user(token):
@@ -68,6 +68,10 @@ def create_app(test_config=None):
     #
     # ## ROUTES
     #
+    @app.route('/')
+    def index():
+        return render_template('index.html')
+
 
     # GET OWN PROFILE - T
     @app.route('/profile')
