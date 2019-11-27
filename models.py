@@ -7,10 +7,14 @@ from flask_sqlalchemy import SQLAlchemy
 from flask import jsonify
 import json
 import logging
+import psycopg2
+from dotenv import load_dotenv
+
+# load_dotenv('.env') # enable if running locally / disable for deployment to heroku
+
 logging.basicConfig(level=logging.DEBUG)
 
-database_name = "skillx"
-database_path = "postgres://{}:{}@{}/{}".format('udacity', 'udacity', 'localhost:5432', database_name)
+database_path = os.environ.get('DATABASE_URL')
 
 db = SQLAlchemy()
 

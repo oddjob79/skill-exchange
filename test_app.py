@@ -2,25 +2,23 @@ import os
 import unittest
 import json
 from flask_sqlalchemy import SQLAlchemy
-
 from app import create_app
 from models import setup_db, Member, Skill, db
+from dotenv import load_dotenv
 
-USERTOKEN = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ik1qSTRRakkyTlRSQ09UaENPVGsyTVRjNFFqTkZOME14T1RKQlJFWTFNRGRCUWtVeE1FRTVSUSJ9.eyJpc3MiOiJodHRwczovL3NraWxsLWV4Y2hhbmdlLmV1LmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw1ZGQzZjBjN2EwNzJkMjBmMTJhMTFlMmEiLCJhdWQiOiJza2lsbHNleGNoYW5nZSIsImlhdCI6MTU3NDg0NDQ3NCwiZXhwIjoxNTc0OTMwODc0LCJhenAiOiJSSkZ5MUpoRE9zOHpaaVlxQlBUa2xvQ0JYanA1RnlFYiIsInNjb3BlIjoiIiwicGVybWlzc2lvbnMiOlsiZGVsZXRlOnByb2ZpbGUiLCJwYXRjaDpwcm9maWxlIiwicG9zdDpwcm9maWxlIiwicmVhZDpwcm9maWxlIiwicmVhZDpza2lsbHMiXX0.ohJUPIFSN8L8_urHXe2L-VWsSO5-xn3pqSI31sjjbe4q0guddRm5nOGPuNoWN0dnII1nQsi1fkpr94DeT7Se7NRvEgzsFXa8nNmN4uIn_I-ezk1iRPHCCqLmsTO7dbjEUzA3BB77BhK2aGlPYbanQ5_DywytpxeO8LYrVAwGb7mmJNCbNZOmkNSi7_7cnCZYst84T0hyca5_-uh1XMTzTKnDl-xPUfQ7HJ4DTZtu72LpXzn1TeKaqC1xOE_N6s-xzxTUevVTnezGFn1RMeQfOEwUsEgvyqznMMnEG5jlLuX5CrMNT4FG1Ij_5rzF7aasOhYvHSHwyEHgQRLDY8TiNQ'
-ADMINTOKEN = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ik1qSTRRakkyTlRSQ09UaENPVGsyTVRjNFFqTkZOME14T1RKQlJFWTFNRGRCUWtVeE1FRTVSUSJ9.eyJpc3MiOiJodHRwczovL3NraWxsLWV4Y2hhbmdlLmV1LmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw1ZGQzZjE3ZDNmOWMwZTBlZjkwNjAyNTEiLCJhdWQiOiJza2lsbHNleGNoYW5nZSIsImlhdCI6MTU3NDg0NDAwNywiZXhwIjoxNTc0OTMwNDA3LCJhenAiOiJSSkZ5MUpoRE9zOHpaaVlxQlBUa2xvQ0JYanA1RnlFYiIsInNjb3BlIjoiIiwicGVybWlzc2lvbnMiOlsiZGVsZXRlOm1lbWJlciIsImRlbGV0ZTpza2lsbHMiLCJwYXRjaDpza2lsbHMiLCJwb3N0OnNraWxscyIsInJlYWQ6bWVtYmVyIiwicmVhZDpza2lsbHMiXX0.hK-nbFpu-mVYOS3rudyGOWIFwSbRtCNgIk5eYZYQxW8zjXtJ3UH6UBfsrjfbOfpyIPbfeGg5fEQMctrROpq3KwOrB3bKNIpx8-9aSkTNM6Gh5DxneGxcTL1ATkowHW3W3TmRrOb38KvY5US78hTrr2KAL0SU6hA7P0zZW76kRlFKKNrsRoaMofFNQf4tgbnHFL8gQeNRbLlmQRREDpjdORV8H3lWrMYj4JrIYn9gyOgF886G_OxJcGmFI1mJZt1tsbgSChmC4LtsNziMLTjQwNmL8uqrYkupfMPq_kbfXkKxQmD_f5OpMPZGySW6jOyc8DvtKqVbF9kr8fALm44S_A'
+# load_dotenv('.env') # enable if running locally / disable for deployment to heroku
 
 class SkillXTestCase(unittest.TestCase):
     def setUp(self):
         """Define test variables and initialize app."""
         self.app = create_app()
         self.client = self.app.test_client
-        self.database_name = "skillx_test"
-        self.database_path = "postgres://{}:{}@{}/{}".format('udacity', 'udacity', 'localhost:5432', self.database_name)
+        self.database_path = os.environ.get('TEST_DATABASE_URL')
         setup_db(self.app, self.database_path)
 
-        # Manually set tokens - taken from Stack Overflow
-        self.userheaders = {'Content-Type': 'application/json', 'Authorization': "Bearer " + USERTOKEN}
-        self.adminheaders = {'Content-Type': 'application/json', 'Authorization': "Bearer " + ADMINTOKEN}
+        # Manually set tokens using environment variables - taken from Stack Overflow
+        self.userheaders = {'Content-Type': 'application/json', 'Authorization': "Bearer " + os.environ.get('USERTOKEN')}
+        self.adminheaders = {'Content-Type': 'application/json', 'Authorization': "Bearer " + os.environ.get('ADMINTOKEN')}
 
         self.new_profile_anni = {
             "name": "Anni",
