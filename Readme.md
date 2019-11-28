@@ -1,4 +1,4 @@
-Welcome to the Capstone Project for Udacity Full Stack Developer course
+Skills Exchange API
 -------------------------------------------------------------------------
 
 The project is hosted at Heroku and is available on the following URL - https://skill-exchange-rt.herokuapp.com
@@ -52,23 +52,24 @@ API documentation
 -----------------------------------
 Endpoints
 -----------------------------------
-GET '/profile'
-GET '/member/{id}'
-GET '/members'
-GET '/skills'
-GET '/skill/{id}'
-POST '/profile'
-POST '/skill'
-DELETE '/profile'
-DELETE '/member/{id}'
-DELETE '/skill/{id}'
-PATCH '/profile'
-PATCH '/skill/{id}'
+GET '/profile'  
+GET '/member/{id}'  
+GET '/members'  
+GET '/skills'  
+GET '/skill/{id}'  
+POST '/profile'  
+POST '/skill'  
+DELETE '/profile'  
+DELETE '/member/{id}'  
+DELETE '/skill/{id}'  
+PATCH '/profile'  
+PATCH '/skill/{id}'  
 
 -----------------------------------
 DETAILS:
 -----------------------------------
 GET '/profile'
+-----------------------------------
 curl https://skill-exchange-rt.herokuapp.com/profile
 - Uses the user_id stored in the authorization bearer token to query the database and return the user's member profile information. The user making the request must have an active login with AuthO which is associated with the 'User' role, and must already have a valid member profile added to the database.
 - Role(s) required: User
@@ -124,6 +125,7 @@ Example -
 
 -----------------------------------
 GET '/member/{id}'
+-----------------------------------
 curl https://skill-exchange-rt.herokuapp.com/member/21
 - Requires a request made with the member id to return the user's profile information. User making the request must have an active login with AuthO which is associated with the 'Admin' role.
 - Role(s) required: Admin
@@ -179,6 +181,7 @@ Example -
 
 -----------------------------------
 GET '/members'
+-----------------------------------
 curl https://skill-exchange-rt.herokuapp.com/members
 - Returns basic information about all members in the system. User making the request must have an active login with AuthO which is associated with the 'Admin' role.
 - Role(s) required: Admin
@@ -217,6 +220,7 @@ Example -
 
 -----------------------------------
 GET '/skills'
+-----------------------------------
 curl https://skill-exchange-rt.herokuapp.com/skills
 - Returns basic information about all skills listed in the system. User making the request must have an active login with AuthO which is associated with either the 'Admin' or the 'User' role.
 - Role(s) required: User or Admin
@@ -294,6 +298,7 @@ Example -
 
 -----------------------------------
 GET '/skill/{id}'
+-----------------------------------
 curl https://skill-exchange-rt.herokuapp.com/skill/10
 - Returns basic information about the skill matching the skill id specified in the request. User making the request must have an active login with AuthO which is associated with either the 'Admin' or the 'User' role.
 - Role(s) required: User or Admin
@@ -313,6 +318,7 @@ Example -
 
 -----------------------------------
 POST '/profile'
+-----------------------------------
 curl -X POST -H "Content-Type: application/json" -d {
 	"name": "Anni",
 	"location": "Sweden",
@@ -376,6 +382,7 @@ Example -
 
 -----------------------------------
 POST '/skill'
+-----------------------------------
 curl -X POST -H "Content-Type: application/json" -d {
 	"name": "Furniture making",
 	"description": "Building cabinets for your front room",
@@ -400,6 +407,7 @@ Example -
 
 -----------------------------------
 DELETE '/profile'
+-----------------------------------
 curl -X DELETE https://skill-exchange-rt.herokuapp.com/profile
 - Uses the user_id stored in the authorization bearer token to query the database and delete the corresponding member profile record. The user making the request must have an active login with AuthO which is associated with the 'User' role, and must already have a valid member profile added to the database.
 - Role(s) required: User
@@ -413,6 +421,7 @@ Example -
 
 -----------------------------------
 DELETE '/member/{id}'
+-----------------------------------
 curl -X DELETE https://skill-exchange-rt.herokuapp.com/member/21
 - Requires a request made with the member id to query the database and delete the corresponding member profile. User making the request must have an active login with AuthO which is associated with the 'Admin' role.
 - Role(s) required: Admin
@@ -426,6 +435,7 @@ Example -
 
 -----------------------------------
 DELETE '/skill/{id}'
+-----------------------------------
 curl -X DELETE https://skill-exchange-rt.herokuapp.com/skill/11
 - Requires a request made with the skill id to query the database and delete the corresponding Skill record. User making the request must have an active login with AuthO which is associated with the 'Admin' role.
 - Role(s) required: Admin
@@ -439,6 +449,7 @@ Example -
 
 -----------------------------------
 PATCH '/profile'
+-----------------------------------
 curl -X PATCH -H "Content-Type: application/json" -d {
   {
   	"name": "Anni-Frid",
@@ -502,6 +513,7 @@ Example -
 
 -----------------------------------
 PATCH '/skill/{id}'
+-----------------------------------
 curl -X PATCH -H "Content-Type: application/json" -d {
 	"description": "Learn to play the harpsichord like a pro",
 	"category": "musical instrument",
